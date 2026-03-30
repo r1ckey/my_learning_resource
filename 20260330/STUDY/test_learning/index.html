@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Assurance (QA) & Testing Architecture Portal</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for code blocks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            /* Deep Blue / QA Reliability Theme */
+            --bg-color: #0d1b2a;
+            --sidebar-bg: rgba(13, 27, 42, 0.85);
+            --content-bg: #1b263b;
+            --text-primary: #e0e1dd;
+            --text-secondary: #778da9;
+            --accent-color: #415a77;
+            --accent-hover: #778da9;
+            --highlight-color: #3f88c5; /* Sharp blue for active elements */
+            --border-color: #415a77;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --code-bg: #0a1128;
+            --alert-info-bg: rgba(63, 136, 197, 0.15);
+            --alert-info-border: #3f88c5;
+            --alert-warn-bg: rgba(217, 39, 39, 0.15);
+            --alert-warn-border: #d92727;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(65, 90, 119, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(63, 136, 197, 0.2) 0px, transparent 50%);
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 28px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(13, 27, 42, 0.9) 0%, rgba(13, 27, 42, 0) 100%);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #778da9 0%, #e0e1dd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.01em;
+            margin-bottom: 4px;
+        }
+
+        .nav-section { padding: 16px 0; }
+
+        .nav-section-title {
+            padding: 8px 24px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #778da9;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .nav-item {
+            padding: 10px 24px;
+            cursor: pointer;
+            color: #bdc3c7;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        .nav-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: #ffffff;
+            background: rgba(63, 136, 197, 0.15);
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--highlight-color);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px rgba(63, 136, 197, 0.6);
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            scroll-behavior: smooth;
+        }
+
+        .content-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--content-bg);
+            padding: 50px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--glass-border);
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Markdown Render Styles */
+        .markdown-body h1 {
+            font-size: 2.1rem; font-weight: 800; margin-bottom: 24px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color); color: #ffffff;
+        }
+        .markdown-body h2 {
+            font-size: 1.5rem; font-weight: 700; margin-top: 40px; margin-bottom: 16px; color: #e0e1dd; display: flex; align-items: center;
+        }
+        .markdown-body h2::before {
+            content: ''; display: inline-block; width: 6px; height: 22px; background: var(--highlight-color); margin-right: 12px; border-radius: 3px;
+        }
+        .markdown-body h3 { font-size: 1.25rem; font-weight: 600; margin-top: 28px; margin-bottom: 12px; color: #cbd5e1; }
+        .markdown-body p, .markdown-body li { font-size: 1.05rem; color: #a1b0c2; margin-bottom: 16px; }
+        .markdown-body ul, .markdown-body ol { padding-left: 28px; margin-bottom: 24px; }
+        .markdown-body a { color: var(--highlight-color); text-decoration: underline; text-underline-offset: 4px; transition: color 0.2s; }
+        .markdown-body a:hover { color: #69a2d6; }
+        .markdown-body hr { border: 0; height: 1px; background: var(--border-color); margin: 36px 0; }
+        .markdown-body blockquote { border-left: 4px solid var(--highlight-color); background: var(--alert-info-bg); margin: 28px 0; padding: 16px 20px; border-radius: 0 8px 8px 0; }
+        .markdown-body blockquote strong { color: #69a2d6; }
+        .markdown-body table { width: 100%; border-collapse: separate; border-spacing: 0; margin: 28px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+        .markdown-body th, .markdown-body td { border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color); padding: 14px; text-align: left; }
+        .markdown-body th { background: rgba(0,0,0,0.25); font-weight: 600; color: #ffffff; }
+        
+        .markdown-body code:not(pre code) { background: rgba(255, 255, 255, 0.1); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.85em; color: #94b2d1; }
+        .markdown-body pre { background: var(--code-bg); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 24px 0; border: 1px solid rgba(255,255,255,0.05); }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #415a77; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #778da9; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Software QA & Testing</h1>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Master of Bug Eradication</p>
+        </div>
+        <div id="nav-container"></div>
+    </div>
+    <div class="main-content" id="main-scroll">
+        <div class="content-wrapper">
+            <div id="content" class="markdown-body">
+                <h2>Loading Quality Assurance Database...</h2>
+            </div>
+        </div>
+    </div>
+    <script src="portal_data.js"></script>
+    <script>
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext'; return hljs.highlight(code, { language }).value;
+            }, langPrefix: 'hljs language-'
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navContainer = document.getElementById('nav-container');
+            const contentArea = document.getElementById('content');
+            if (typeof portalData === 'undefined') {
+                contentArea.innerHTML = `<h2>Database Not Found</h2><p>Run python build_portal.py</p>`; return;
+            }
+
+            const order = [
+                "P1Roadmap", "P1Week1", "P1Week2", "P1Week3", "P1Week4", 
+                "P2Roadmap", "P2Week1", "P2Week2", "P2Week3", "P2Week4",
+                "P3Roadmap", "P3Week1", "P3Week2", "P3Week3", "P3Week4",
+                "P4Roadmap", "P4Week1", "P4Week2", "P4Week3", "P4Week4"
+            ];
+            let isFirst = true;
+
+            order.forEach(section => {
+                if (!portalData[section] || portalData[section].length === 0) return;
+                
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'nav-section';
+                
+                const titleEl = document.createElement('div');
+                titleEl.className = 'nav-section-title';
+                
+                if (section === "P1Roadmap") titleEl.textContent = "Part 1: テスト基礎とマインドセット";
+                else if (section.startsWith("P1Week")) titleEl.textContent = "Part 1 - " + section.replace('P1Week', 'Week ');
+                else if (section === "P2Roadmap") titleEl.textContent = "Part 2: 無敵のテスト設計技法";
+                else if (section.startsWith("P2Week")) titleEl.textContent = "Part 2 - " + section.replace('P2Week', 'Week ');
+                else if (section === "P3Roadmap") titleEl.textContent = "Part 3: 実践！Excel仕様書作成術";
+                else if (section.startsWith("P3Week")) titleEl.textContent = "Part 3 - " + section.replace('P3Week', 'Week ');
+                else if (section === "P4Roadmap") titleEl.textContent = "Part 4: モックとテスト自動化 (UT)";
+                else if (section.startsWith("P4Week")) titleEl.textContent = "Part 4 - " + section.replace('P4Week', 'Week ');
+                
+                sectionEl.appendChild(titleEl);
+
+                portalData[section].forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'nav-item';
+                    
+                    let displayName = item.title.replace(/^\d+_/, '').replace(/_/g, ' ');
+                    itemEl.textContent = displayName;
+                    
+                    itemEl.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        itemEl.classList.add('active');
+                        
+                        let processContent = item.content.replace(/> \[!IMPORTANT\]/g, '> **💡 CORE RULE**<br>')
+                                                         .replace(/> \[!WARNING\]/g, '> **⚠️ WARNING**<br>')
+                                                         .replace(/> \[!TIP\]/g, '> **✨ PRO TIP**<br>')
+                                                         .replace(/> \[!CAUTION\]/g, '> **🚨 FATAL ERROR**<br>');
+                        
+                        contentArea.innerHTML = marked.parse(processContent);
+                        const wrapper = document.querySelector('.content-wrapper');
+                        wrapper.style.animation = 'none';
+                        setTimeout(() => wrapper.style.animation = 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards', 10);
+                        document.getElementById('main-scroll').scrollTop = 0;
+                    });
+                    sectionEl.appendChild(itemEl);
+                    if (isFirst) { itemEl.click(); isFirst = false; }
+                });
+                navContainer.appendChild(sectionEl);
+            });
+        });
+    </script>
+</body>
+</html>
