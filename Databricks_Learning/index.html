@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lakehouse Mastery - Databricks Portal</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for code blocks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-bg: rgba(30, 41, 59, 0.7);
+            --content-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #60a5fa;
+            --border-color: #334155;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --code-bg: #0d1117;
+            --alert-info-bg: rgba(59, 130, 246, 0.15);
+            --alert-info-border: #3b82f6;
+            --alert-warn-bg: rgba(245, 158, 11, 0.15);
+            --alert-warn-border: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            line-height: 1.7;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 320px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-header {
+            padding: 28px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(30,41,59,0.9) 0%, rgba(30,41,59,0) 100%);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+            margin-bottom: 4px;
+        }
+
+        .nav-section {
+            padding: 16px 0;
+        }
+
+        .nav-section-title {
+            padding: 8px 24px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .nav-item {
+            padding: 10px 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            position: relative;
+            line-height: 1.4;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.15);
+            font-weight: 600;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-color);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+            scroll-behavior: smooth;
+        }
+
+        .content-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--content-bg);
+            padding: 56px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--glass-border);
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Markdown Render Styles */
+        .markdown-body h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: -0.025em;
+            color: #ffffff;
+        }
+
+        .markdown-body h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 48px;
+            margin-bottom: 20px;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+        }
+        
+        .markdown-body h2::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 24px;
+            background: var(--accent-color);
+            margin-right: 12px;
+            border-radius: 4px;
+        }
+
+        .markdown-body h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 16px;
+            color: #e2e8f0;
+        }
+
+        .markdown-body p, .markdown-body li {
+            font-size: 1.05rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 28px;
+            margin-bottom: 24px;
+        }
+
+        .markdown-body li {
+            margin-bottom: 8px;
+        }
+
+        .markdown-body a {
+            color: var(--accent-hover);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            transition: color 0.2s;
+        }
+
+        .markdown-body a:hover {
+            color: #93c5fd;
+        }
+
+        .markdown-body hr {
+            border: 0;
+            height: 1px;
+            background: var(--border-color);
+            margin: 40px 0;
+        }
+
+        /* Inline Code */
+        .markdown-body code:not(pre code) {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85em;
+            color: #fca5a5;
+        }
+
+        /* Code Blocks */
+        .markdown-body pre {
+            background: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 28px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .markdown-body pre code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            background: transparent;
+            padding: 0;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        /* GitHub Style Alerts */
+        .markdown-body blockquote {
+            border-left: 4px solid var(--accent-color);
+            background: var(--alert-info-bg);
+            margin: 32px 0;
+            padding: 20px 24px;
+            border-radius: 0 12px 12px 0;
+            position: relative;
+        }
+
+        .markdown-body blockquote p {
+            margin-bottom: 12px;
+        }
+        
+        .markdown-body blockquote p:last-child {
+            margin-bottom: 0;
+        }
+
+        .markdown-body blockquote strong {
+            color: var(--accent-hover);
+        }
+        
+        /* Tables */
+        .markdown-body table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 32px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .markdown-body th, .markdown-body td {
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            padding: 16px;
+            text-align: left;
+        }
+        
+        .markdown-body th:last-child, .markdown-body td:last-child {
+            border-right: none;
+        }
+        
+        .markdown-body th {
+            background: rgba(255,255,255,0.05);
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        
+        .markdown-body tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .content-wrapper { padding: 40px; }
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: 35vh; border-right: none; border-bottom: 1px solid var(--glass-border); }
+            .main-content { padding: 20px; height: 65vh; }
+            .content-wrapper { padding: 24px; border-radius: 16px; }
+            .markdown-body h1 { font-size: 1.75rem; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Lakehouse Mastery</h1>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; display: flex; align-items: center;">
+                <svg style="width: 14px; height: 14px; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Databricks Study Portal
+            </p>
+        </div>
+        <div id="nav-container">
+            <!-- Navigation items injected sequentially via JS -->
+        </div>
+    </div>
+    
+    <div class="main-content" id="main-scroll">
+        <div class="content-wrapper">
+            <div id="content" class="markdown-body">
+                <h2>Welcome Explorer!</h2>
+                <div style="display: flex; align-items: center; color: var(--text-secondary); margin-top: 20px;">
+                    <svg class="animate-spin" style="width: 24px; height: 24px; margin-right: 12px; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Loading dynamic curriculum from local files...
+                </div>
+                <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+            </div>
+        </div>
+    </div>
+
+    <!-- The compiled dynamic data is loaded here -->
+    <script src="portal_data.js"></script>
+    <script>
+        // Setup Marked.js with syntax highlighting
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const navContainer = document.getElementById('nav-container');
+            const contentArea = document.getElementById('content');
+            const mainScroll = document.getElementById('main-scroll');
+            
+            if (typeof portalData === 'undefined') {
+                contentArea.innerHTML = `
+                    <div style="text-align: center; padding: 60px 40px;">
+                        <svg style="width: 72px; height: 72px; margin: 0 auto 24px; color: #ef4444;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <h2 style="color: #f8fafc; margin-bottom: 12px; font-size: 1.8rem;">Database Not Found</h2>
+                        <p style="color: #94a3b8; font-size: 1.1rem;">You need to compile the markdown files first.</p>
+                        <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; margin-top: 24px; border: 1px solid var(--border-color); text-align: left;">
+                            <code style="color: #60a5fa; font-family: monospace;">> python build_portal.py</code>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const order = [
+                "Roadmap", "Week1", "Week2", "Week3", "Week4", 
+                "CertRoadmap", "CertWeek1", "CertWeek2", "CertWeek3", "CertWeek4",
+                "AdvRoadmap", "AdvWeek1", "AdvWeek2", "AdvWeek3", "AdvWeek4",
+                "GenAIRoadmap", "GenAIWeek1", "GenAIWeek2", "GenAIWeek3", "GenAIWeek4"
+            ];
+            let isFirst = true;
+
+            order.forEach(section => {
+                if (!portalData[section] || portalData[section].length === 0) return;
+                
+                // Construct Header
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'nav-section';
+                
+                const titleEl = document.createElement('div');
+                titleEl.className = 'nav-section-title';
+                
+                if (section === "Roadmap") titleEl.textContent = "Part 1: Lakehouse Foundations";
+                else if (section === "Week1" || section === "Week2" || section === "Week3" || section === "Week4") titleEl.textContent = "Part 1 - " + section.replace('Week', 'Week ');
+                else if (section === "CertRoadmap") titleEl.textContent = "Part 2: Certification (DE Associate)";
+                else if (section.startsWith("CertWeek")) titleEl.textContent = "Part 2 - " + section.replace('CertWeek', 'Week ');
+                else if (section === "AdvRoadmap") titleEl.textContent = "Part 3: Advanced DE (Professional)";
+                else if (section.startsWith("AdvWeek")) titleEl.textContent = "Part 3 - " + section.replace('AdvWeek', 'Week ');
+                else if (section === "GenAIRoadmap") titleEl.textContent = "Part 4: GenAI & Data Intelligence";
+                else if (section.startsWith("GenAIWeek")) titleEl.textContent = "Part 4 - " + section.replace('GenAIWeek', 'Week ');
+                
+                sectionEl.appendChild(titleEl);
+
+                // Construct Nav Items
+                portalData[section].forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'nav-item';
+                    
+                    // Clean up display names
+                    let displayName = item.title;
+                    displayName = displayName.replace(/^\d+_/, ''); // Remove 01_
+                    displayName = displayName.replace(/_/g, ' ');   // Replace underscores with spaces
+
+                    itemEl.textContent = displayName;
+                    
+                    itemEl.addEventListener('click', () => {
+                        // Toggle active visual states
+                        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                        itemEl.classList.add('active');
+                        
+                        // Parse GitHub-style alerts into visually appealing blockquotes
+                        let processContent = item.content;
+                        processContent = processContent.replace(/> \[!IMPORTANT\]/g, '> **💡 IMPORTANT**<br>');
+                        processContent = processContent.replace(/> \[!WARNING\]/g, '> **⚠️ WARNING**<br>');
+                        processContent = processContent.replace(/> \[!TIP\]/g, '> **✨ PRO TIP**<br>');
+                        processContent = processContent.replace(/> \[!CAUTION\]/g, '> **🚨 CAUTION**<br>');
+                        
+                        // Render Markdown to HTML
+                        contentArea.innerHTML = marked.parse(processContent);
+                        
+                        // Retrigger the smooth fade-in animation
+                        const wrapper = document.querySelector('.content-wrapper');
+                        wrapper.style.animation = 'none';
+                        setTimeout(() => wrapper.style.animation = 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards', 10);
+                        
+                        // Scroll to top
+                        mainScroll.scrollTop = 0;
+                    });
+
+                    sectionEl.appendChild(itemEl);
+
+                    // Auto-click the very first element to load landing page
+                    if (isFirst) {
+                        itemEl.click();
+                        isFirst = false;
+                    }
+                });
+
+                navContainer.appendChild(sectionEl);
+            });
+        });
+    </script>
+</body>
+</html>
