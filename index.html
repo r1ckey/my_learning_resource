@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Learning Resource - Architect Dashboards</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            
+            --theme-dbx: #e02f2f;     /* Databricks Red */
+            --theme-azure: #0078d4;   /* Azure Blue */
+            --theme-de: #10b981;      /* Data Eng Emerald */
+            --theme-qa: #3f88c5;      /* QA Deep Blue */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(15, 23, 42, 1) 0px, transparent 100%),
+                radial-gradient(at 100% 100%, rgba(30, 41, 59, 1) 0px, transparent 100%);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        /* Staggered animation delays */
+        .card:nth-child(1) { animation-delay: 0.1s; border-top: 4px solid var(--theme-dbx); }
+        .card:nth-child(2) { animation-delay: 0.2s; border-top: 4px solid var(--theme-azure); }
+        .card:nth-child(3) { animation-delay: 0.3s; border-top: 4px solid var(--theme-de); }
+        .card:nth-child(4) { animation-delay: 0.4s; border-top: 4px solid var(--theme-qa); }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Subtle glowing background on hover */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .card:nth-child(1):hover::before { background: radial-gradient(circle at top right, rgba(224, 47, 47, 0.1) 0%, transparent 60%); opacity: 1; }
+        .card:nth-child(2):hover::before { background: radial-gradient(circle at top right, rgba(0, 120, 212, 0.1) 0%, transparent 60%); opacity: 1; }
+        .card:nth-child(3):hover::before { background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.1) 0%, transparent 60%); opacity: 1; }
+        .card:nth-child(4):hover::before { background: radial-gradient(circle at top right, rgba(63, 136, 197, 0.15) 0%, transparent 60%); opacity: 1; }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+
+        /* Theme colored titles */
+        .card:nth-child(1) .card-title { color: #ff6b6b; }
+        .card:nth-child(2) .card-title { color: #5eb4ff; }
+        .card:nth-child(3) .card-title { color: #34d399; }
+        .card:nth-child(4) .card-title { color: #69a2d6; }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 24px;
+        }
+
+        .card-footer {
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .card:nth-child(1) .card-footer { color: #ff6b6b; }
+        .card:nth-child(2) .card-footer { color: #5eb4ff; }
+        .card:nth-child(3) .card-footer { color: #34d399; }
+        .card:nth-child(4) .card-footer { color: #69a2d6; }
+
+        .card:hover .card-footer {
+            opacity: 1;
+        }
+
+        .card-footer::after {
+            content: '→';
+            margin-left: 8px;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+
+        .card:hover .card-footer::after {
+            transform: translateX(4px);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Architect Portals</h1>
+        <p>A comprehensive collection of deep-dive architectural knowledge, design patterns, and engineering philosophies.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <!-- Databricks Portal -->
+        <!-- Note: This URL points to the subfolder. If the path changes, update the href! -->
+        <a href="./Databricks_Learning/index.html" class="card">
+            <div class="card-icon">🧱</div>
+            <div class="card-title">Databricks Architecture</div>
+            <div class="card-desc">Master Lakehouse architecture, PySpark fundamentals, Unity Catalog governance, and MosaicAI deployments.</div>
+            <div class="card-footer">Enter Portal</div>
+        </a>
+
+        <!-- Azure Portal -->
+        <a href="./Azure_Learning/index.html" class="card">
+            <div class="card-icon">☁️</div>
+            <div class="card-title">Azure Enterprise Cloud</div>
+            <div class="card-desc">Deep dive into Azure Administration (AZ-104), Virtual Networks, RBAC, Managed Identities, and scalable cloud compute.</div>
+            <div class="card-footer">Enter Portal</div>
+        </a>
+
+        <!-- Data Engineer Portal -->
+        <a href="./Dataengineer_learning/index.html" class="card">
+            <div class="card-icon">🏗️</div>
+            <div class="card-title">Data Engineering Core</div>
+            <div class="card-desc">Vendor-agnostic principles of Data Modeling, CDC pipelines, Apache Kafka streaming, and Spark physical layer tuning.</div>
+            <div class="card-footer">Enter Portal</div>
+        </a>
+
+        <!-- Software QA Portal -->
+        <a href="./test_learning/index.html" class="card">
+            <div class="card-icon">🛡️</div>
+            <div class="card-title">Software QA & Testing</div>
+            <div class="card-desc">Eradicate bugs with mathematical precision using test design techniques (Boundary, Pairwise) and TDD mocking strategies.</div>
+            <div class="card-footer">Enter Portal</div>
+        </a>
+
+    </div>
+
+</body>
+</html>
